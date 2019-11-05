@@ -8,53 +8,57 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Senai.Roman.WebApi
+namespace Roman.Senai.WebApi
 {
     public class Startup
     {
-
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
-                .AddJsonOptions(options =>
-                {
+                .AddJsonOptions
+                (
+                options => {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 })
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "Roman API", Version = "v1" });
-            });
-
-
-            // configurar - token - jwt
-            // implementar a autenticacao
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = "JwtBearer";
                 options.DefaultChallengeScheme = "JwtBearer";
             }).AddJwtBearer("JwtBearer", options =>
             {
-                // definir as opcoes
-                options.TokenValidationParameters = new TokenValidationParameters
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
-                    // quem esta solicitando
                     ValidateIssuer = true,
-                    // quem esta validando
+
                     ValidateAudience = true,
-                    // tempo de expiracao
+
                     ValidateLifetime = true,
-                    // forma de criptografia
+
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("roman-chave-autenticacao")),
-                    // tempo de expiracao
+
                     ClockSkew = TimeSpan.FromMinutes(30),
-                    // quem esta enviando
-                    ValidIssuer = "Roman.WebApi",
-                    ValidAudience = "Roman.WebApi"
+
+                    ValidIssuer = "Roman.Senai.WebApi",
+
+                    ValidAudience = "Roman.Senai.WebApi"
                 };
             });
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "M_Roman API", Version = "v1" });
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,17 +69,16 @@ namespace Senai.Roman.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            // habilita a autenticacao
-            app.UseAuthentication();
-
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Roman API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "M_Roman API V1");
             });
 
+            app.UseAuthentication();
             app.UseMvc();
+
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Roman.Senai.WebApi.Domains
         }
 
         public int IdTema { get; set; }
-        public string Tema1 { get; set; }
+        public string Nome { get; set; }
 
         public ICollection<Projeto> Projeto { get; set; }
     }
